@@ -1,0 +1,61 @@
+/* Container styling for the white card effect */
+.table-container {
+    -fx-background-color: white;
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 2, 0);
+}
+
+/* Remove default table borders and backgrounds */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 10;
+}
+
+/* Header styling */
+.table-view .column-header-background {
+    -fx-background-color: transparent;
+    -fx-padding: 0 0 10 0;
+}
+
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-size: 40px;
+}
+
+.table-view .column-header .label {
+    -fx-font-family: "ITC Avant Garde Gothic", "SansSerif";
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-text-fill: #333333;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* Row styling (horizontal lines only) */
+.table-view .table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #eeeeee transparent;
+    -fx-border-width: 1px;
+    -fx-cell-size: 45px; /* Taller rows for modern look */
+}
+
+/* Cell text styling */
+.table-view .table-cell {
+    -fx-font-family: "ITC Avant Garde Gothic", "SansSerif";
+    -fx-font-size: 13px;
+    -fx-text-fill: #555555;
+    -fx-alignment: CENTER_LEFT;
+    -fx-border-color: transparent;
+}
+
+/* Selection color */
+.table-view .table-row-cell:selected {
+    -fx-background-color: #f8f9fa;
+}
+
+/* Remove scrollbar background */
+.table-view .scroll-bar:horizontal, .table-view .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}

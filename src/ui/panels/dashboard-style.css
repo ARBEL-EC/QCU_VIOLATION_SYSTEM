@@ -1,0 +1,45 @@
+/* Card Container Shadow Effect */
+.dashboard-card {
+    -fx-background-color: white;
+    -fx-background-radius: 25;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 50, 150, 0.1), 20, 0, 5, 10);
+}
+
+/* ------------------------------------- */
+/* CHART STYLING                         */
+/* ------------------------------------- */
+
+/* Remove the grey plot background and borders */
+.chart-plot-background {
+    -fx-background-color: transparent;
+}
+.chart-content {
+    -fx-padding: 0;
+}
+
+/* Hide the little dots (data points) on the area chart */
+.chart-area-symbol {
+    -fx-background-color: transparent, transparent;
+    -fx-padding: 0;
+}
+
+/* Remove stroke lines on the area edges */
+.chart-series-area-line {
+    -fx-stroke: transparent;
+    -fx-stroke-width: 0;
+}
+
+/* Wave 1 - Blue Layer */
+.default-color0.chart-series-area-fill {
+    -fx-fill: rgba(0, 74, 173, 0.6); 
+}
+
+/* Wave 2 - Purple Layer */
+.default-color1.chart-series-area-fill {
+    -fx-fill: rgba(203, 108, 230, 0.6); 
+}
+
+/* Wave 3 - Cyan Layer */
+.default-color2.chart-series-area-fill {
+    -fx-fill: rgba(64, 224, 208, 0.5); 
+}
