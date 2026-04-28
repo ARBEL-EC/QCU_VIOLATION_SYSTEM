@@ -9,7 +9,6 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 import java.io.InputStream;
@@ -24,6 +23,17 @@ public class MainFrame extends Application {
 
     private StackPane mainContentArea;
     private List<Button> navButtons = new ArrayList<>();
+    private String userRole; // Stores the current user's role
+
+    // Constructor to accept role from LoginFrame
+    public MainFrame(String role) {
+        this.userRole = role;
+    }
+
+    // Default constructor for testing/direct launch
+    public MainFrame() {
+        this.userRole = "Admin"; // Fallback
+    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -77,21 +87,26 @@ public class MainFrame extends Application {
         }
         
         btnLogout.setOnAction(e -> {
-            System.out.println("Logging out...");
-            primaryStage.close();
-            // TODO: Re-open LoginFrame here later
+            // Custom Confirmation Popup
+            if (ui.components.CustomDialog.showConfirmation("Log Out", "Are you sure you want to log out of your account?")) {
+                primaryStage.close();
+                try {
+                    new LoginFrame().start(new Stage());
+                } catch (Exception ex) { 
+                    ex.printStackTrace(); 
+                }
+            }
         });
 
-        // Add everything to sidebar
-        sidebar.getChildren().addAll(
-                logoContainer,
-                btnDashboard,
-                btnLogViolation,
-                btnRecords,
-                btnAudit,
-                spacer,
-                btnLogout
-        );
+        // --- Role-Based Sidebar Assembly ---
+        sidebar.getChildren().addAll(logoContainer, btnDashboard, btnLogViolation, btnRecords);
+        
+        // Only add Audit Logs if user is Admin
+        if ("Admin".equalsIgnoreCase(userRole)) {
+            sidebar.getChildren().add(btnAudit);
+        }
+        
+        sidebar.getChildren().addAll(spacer, btnLogout);
 
         root.setLeft(sidebar);
 
@@ -117,10 +132,24 @@ public class MainFrame extends Application {
         // ==========================================
         // 3. STAGE SETUP
         // ==========================================
-       Scene scene = new Scene(root, 1100, 768);
+        Scene scene = new Scene(root, 1100, 768);
         primaryStage.setTitle("Student Violation System - Dashboard");
+        
+        // --- Application Logo ---
+        try {
+            InputStream iconStream = getClass().getResourceAsStream("/Icons/Logo.png");
+            if (iconStream != null) {
+                primaryStage.getIcons().add(new Image(iconStream));
+            }
+        } catch (Exception e) { 
+            System.out.println("Logo not found for stage icon."); 
+        }
+        
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        // Load default dashboard panel on startup
+        handleNavClick(btnDashboard, "Dashboard");
     }
 
     // --- HELPER: Create Navigation Button ---
@@ -180,8 +209,8 @@ public class MainFrame extends Application {
         // 3. Load the actual panel based on the button clicked
         switch (panelName) {
             case "Records":
-                // Inject our new JavaFX RecordsPanel!
-                RecordsPanel recordsPanel = new RecordsPanel();
+                // Pass the role to RecordsPanel for Staff restrictions
+                RecordsPanel recordsPanel = new RecordsPanel(userRole);
                 mainContentArea.getChildren().add(recordsPanel);
                 break;
                 
@@ -191,12 +220,11 @@ public class MainFrame extends Application {
                 break;
                 
             case "LogViolation":
-                // Inject our new JavaFX LogViolationPanel!
                 LogViolationPanel logViolationPanel = new LogViolationPanel();
                 mainContentArea.getChildren().add(logViolationPanel);
                 break;
+                
             case "Audit":
-                // Inject our new JavaFX AuditPanel!
                 AuditPanel auditPanel = new AuditPanel();
                 mainContentArea.getChildren().add(auditPanel);
                 break;

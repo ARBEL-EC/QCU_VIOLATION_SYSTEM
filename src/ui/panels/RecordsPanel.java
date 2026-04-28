@@ -32,8 +32,11 @@ public class RecordsPanel extends VBox {
 
     private TableView<ViolationRecord> table;
     private ObservableList<ViolationRecord> masterData;
+    private String currentUserRole; // NEW: Stores if user is Admin or Staff
 
-    public RecordsPanel() {
+    public RecordsPanel(String role) {
+        this.currentUserRole = role;
+
         // 1. MAIN LAYOUT SETUP
         setSpacing(20);
         setPadding(new Insets(10, 0, 0, 0));
@@ -71,9 +74,9 @@ public class RecordsPanel extends VBox {
         topArea.getChildren().addAll(searchContainer, topSpacer, userAdminArea);
 
         // ==========================================
-        // 3. HEADER SECTION (TITLE & EDIT BUTTON)
+        // 3. HEADER SECTION (TITLE & ACTION BUTTONS)
         // ==========================================
-        HBox headerArea = new HBox();
+        HBox headerArea = new HBox(15);
         headerArea.setAlignment(Pos.BOTTOM_LEFT);
         
         Text title = new Text("STUDENT RECORDS");
@@ -89,23 +92,35 @@ public class RecordsPanel extends VBox {
         Region headerSpacer = new Region();
         HBox.setHgrow(headerSpacer, Priority.ALWAYS);
         
-        // --- 🚀 NEW EDIT BUTTON LOGIC ---
+        // --- NEW: VIEW DETAILS BUTTON ---
+        Button btnView = new Button("VIEW DETAILS");
+        btnView.setPrefHeight(30);
+        btnView.setStyle("-fx-background-color: #004aad; -fx-text-fill: white; -fx-background-radius: 15; -fx-font-family: 'ITC Avant Garde Gothic', sans-serif; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 15;");
+        
+        btnView.setOnAction(e -> {
+            ViolationRecord selectedRecord = table.getSelectionModel().getSelectedItem();
+            if (selectedRecord == null) {
+                ui.components.CustomDialog.showMessage("No Selection", "Please select a record to view.", true);
+            } else {
+                openViewDetailsDialog(selectedRecord);
+            }
+        });
+
+        // --- EXISTING: EDIT BUTTON ---
         Button btnEdit = new Button("EDIT");
-        btnEdit.setPrefWidth(80);
         btnEdit.setPrefHeight(30);
-        btnEdit.setStyle("-fx-background-color: #ff4d4d; -fx-text-fill: white; -fx-background-radius: 15; -fx-font-family: 'ITC Avant Garde Gothic', sans-serif; -fx-font-weight: bold; -fx-cursor: hand;");
+        btnEdit.setStyle("-fx-background-color: #ff4d4d; -fx-text-fill: white; -fx-background-radius: 15; -fx-font-family: 'ITC Avant Garde Gothic', sans-serif; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 15;");
         
         btnEdit.setOnAction(e -> {
             ViolationRecord selectedRecord = table.getSelectionModel().getSelectedItem();
             if (selectedRecord == null) {
-                showAlert(Alert.AlertType.WARNING, "No Selection", "Please select a record first.");
+                ui.components.CustomDialog.showMessage("No Selection", "Please select a record to edit.", true);
             } else {
                 openEditDialog(selectedRecord);
             }
         });
-        // ---------------------------------
 
-        headerArea.getChildren().addAll(title, headerSpacer, btnEdit);
+        headerArea.getChildren().addAll(title, headerSpacer, btnView, btnEdit);
 
         // ==========================================
         // 4. TABLE VIEW SETUP
@@ -125,28 +140,81 @@ public class RecordsPanel extends VBox {
             System.err.println("WARNING: Could not load table-style.css.");
         }
 
-        // ==========================================
-        // 5. ASSEMBLE PANEL
-        // ==========================================
         getChildren().addAll(topArea, headerArea, tableCard);
         setupSearchFilter(searchField);
         loadDataFromDatabase();
     }
+
+    // ==========================================
+    // NEW: VIEW FULL DETAILS DIALOG
+    // ==========================================
+    private void openViewDetailsDialog(ViolationRecord record) {
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.setTitle("Violation Details");
+
+        VBox layout = new VBox(15);
+        layout.setPadding(new Insets(30));
+        layout.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-border-color: #d1d5db; -fx-border-width: 2; -fx-border-radius: 15;");
+
+        Text title = new Text("Record Details");
+        title.setFont(Font.font("Poppins", FontWeight.BOLD, 24));
+        title.setFill(Color.web("#004aad"));
+
+        GridPane grid = new GridPane();
+        grid.setVgap(12);
+        grid.setHgap(20);
+        
+        String styleLabel = "-fx-font-weight: bold; -fx-text-fill: #555555; -fx-font-family: 'ITC Avant Garde Gothic', sans-serif; -fx-font-size: 14px;";
+        String styleValue = "-fx-text-fill: #000000; -fx-font-family: 'ITC Avant Garde Gothic', sans-serif; -fx-font-size: 14px;";
+
+        grid.addRow(0, createStyledLabel("Name:", styleLabel), createStyledLabel(record.getName(), styleValue));
+        grid.addRow(1, createStyledLabel("Student ID:", styleLabel), createStyledLabel(record.getIdNo(), styleValue));
+        grid.addRow(2, createStyledLabel("Course:", styleLabel), createStyledLabel(record.getCourse(), styleValue));
+        grid.addRow(3, createStyledLabel("Date:", styleLabel), createStyledLabel(record.dateProperty().get(), styleValue));
+        grid.addRow(4, createStyledLabel("Type:", styleLabel), createStyledLabel(record.typeProperty().get(), styleValue));
+        grid.addRow(5, createStyledLabel("Sanction:", styleLabel), createStyledLabel(record.sanctionProperty().get(), styleValue));
+        grid.addRow(6, createStyledLabel("Status:", styleLabel), createStyledLabel(record.getStatus(), styleValue));
+        
+        Label lblDesc = createStyledLabel("Description:", styleLabel);
+        Label valDesc = createStyledLabel(record.getViolation(), styleValue);
+        valDesc.setWrapText(true);
+        valDesc.setMaxWidth(300);
+        grid.addRow(7, lblDesc, valDesc);
+
+        Button btnClose = new Button("Close");
+        btnClose.setStyle("-fx-background-color: #e5e7eb; -fx-text-fill: #6b7280; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 8 20; -fx-cursor: hand;");
+        btnClose.setOnAction(e -> popupStage.close());
+
+        HBox btnBox = new HBox(btnClose);
+        btnBox.setAlignment(Pos.CENTER_RIGHT);
+        btnBox.setPadding(new Insets(10, 0, 0, 0));
+
+        layout.getChildren().addAll(title, grid, btnBox);
+
+        Scene scene = new Scene(layout);
+        popupStage.setScene(scene);
+        popupStage.showAndWait();
+    }
+    
+    private Label createStyledLabel(String text, String style) {
+        Label lbl = new Label(text);
+        lbl.setStyle(style);
+        return lbl;
+    }
   
     // ==========================================
-    // 🚀 NEW: POPUP DIALOG LOGIC
+    // UPDATED: EDIT DIALOG (WITH STAFF RESTRICTIONS)
     // ==========================================
     private void openEditDialog(ViolationRecord record) {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.APPLICATION_MODAL);
         popupStage.setTitle("Edit Record");
 
-        // Clean white rounded container
         VBox layout = new VBox(15);
         layout.setPadding(new Insets(25));
         layout.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-border-color: #d1d5db; -fx-border-radius: 15;");
 
-        // Gradient Title
         Text title = new Text("Edit Sanction");
         title.setFont(Font.font("Poppins", FontWeight.BOLD, 24));
         LinearGradient titleGradient = new LinearGradient(
@@ -160,14 +228,14 @@ public class RecordsPanel extends VBox {
         Label lblStatus = new Label("Status:");
         lblStatus.setStyle("-fx-font-family: 'ITC Avant Garde Gothic', sans-serif; -fx-font-weight: bold; -fx-text-fill: #555555;");
         ComboBox<String> cmbStatus = new ComboBox<>(FXCollections.observableArrayList("Pending", "Ongoing", "Resolved"));
-        cmbStatus.setValue(record.getStatus()); // Pre-select current status
+        cmbStatus.setValue(record.getStatus()); 
         cmbStatus.setMaxWidth(Double.MAX_VALUE);
         cmbStatus.setStyle("-fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #d1d5db; -fx-background-color: white;");
 
         // 2. Violation Description TextArea
         Label lblViolation = new Label("Violation Description:");
         lblViolation.setStyle("-fx-font-family: 'ITC Avant Garde Gothic', sans-serif; -fx-font-weight: bold; -fx-text-fill: #555555;");
-        TextArea txtViolation = new TextArea(record.getViolation()); // Pre-fill description
+        TextArea txtViolation = new TextArea(record.getViolation()); 
         txtViolation.setWrapText(true);
         txtViolation.setPrefRowCount(4);
         txtViolation.setStyle("-fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #d1d5db; -fx-control-inner-background: white;");
@@ -185,9 +253,15 @@ public class RecordsPanel extends VBox {
         btnSave.setStyle("-fx-background-color: linear-gradient(to right, #004aad, #cb6ce6); -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 8 20; -fx-cursor: hand;");
         btnSave.setOnAction(e -> updateRecord(record, cmbStatus.getValue(), txtViolation.getText().trim(), popupStage));
 
+        // --- APPLY STAFF RESTRICTIONS ---
+        if ("Staff".equalsIgnoreCase(currentUserRole)) {
+            btnDelete.setVisible(false); // Staff cannot delete records
+            txtViolation.setEditable(false); // Staff cannot edit descriptions
+            txtViolation.setStyle("-fx-control-inner-background: #f3f4f6; -fx-text-fill: #9ca3af; -fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #d1d5db;");
+        }
+
         buttonBox.getChildren().addAll(btnDelete, btnSave);
 
-        // Add everything to layout
         layout.getChildren().addAll(title, lblStatus, cmbStatus, lblViolation, txtViolation, buttonBox);
 
         Scene scene = new Scene(layout, 400, 350);
@@ -198,53 +272,50 @@ public class RecordsPanel extends VBox {
 
     private void updateRecord(ViolationRecord record, String newStatus, String newViolation, Stage popupStage) {
         String updateSql = "UPDATE Violations SET Status = ?, Violation = ? WHERE ViolationID = ?";
-        String auditSql = "INSERT INTO AuditLogs (User, Action, Details) VALUES ('ADMIN', 'Edited Record', ?)";
+        String auditSql = "INSERT INTO AuditLogs (User, Action, Details) VALUES (?, 'Edited Record', ?)";
 
         try (Connection conn = DatabaseConnection.getConnection()) {
-            conn.setAutoCommit(false); // Enable transaction
+            conn.setAutoCommit(false); 
 
             try (PreparedStatement psUpdate = conn.prepareStatement(updateSql);
                  PreparedStatement psAudit = conn.prepareStatement(auditSql)) {
 
-                // Update row
                 psUpdate.setString(1, newStatus);
                 psUpdate.setString(2, newViolation);
-                psUpdate.setInt(3, record.getId()); // Using strictly the DB ID
+                psUpdate.setInt(3, record.getId()); 
                 psUpdate.executeUpdate();
 
-                // Log audit
                 String details = "Edited record for student " + record.getIdNo() + " (Status -> " + newStatus + ")";
-                psAudit.setString(1, details);
+                psAudit.setString(1, currentUserRole.toUpperCase());
+                psAudit.setString(2, details);
                 psAudit.executeUpdate();
 
                 conn.commit();
                 
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Record updated successfully.");
+                ui.components.CustomDialog.showMessage("Success", "Record updated successfully.", false);
                 popupStage.close();
-                loadDataFromDatabase(); // Refresh table
+                loadDataFromDatabase(); 
 
             } catch (SQLException ex) {
                 conn.rollback();
                 throw ex;
             }
         } catch (SQLException e) {
-            showAlert(Alert.AlertType.ERROR, "Database Error", "Failed to update record: " + e.getMessage());
+            ui.components.CustomDialog.showMessage("Database Error", "Failed to update record: " + e.getMessage(), true);
             e.printStackTrace();
         }
     }
 
     private void deleteRecord(ViolationRecord record, Stage popupStage) {
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this violation record?", ButtonType.YES, ButtonType.NO);
-        confirm.setTitle("Confirm Delete");
-        confirm.setHeaderText(null);
-        confirm.showAndWait();
+        // Use custom confirmation popup instead of default JavaFX Alert
+        boolean confirm = ui.components.CustomDialog.showConfirmation("Confirm Delete", "Are you sure you want to permanently delete this violation record?");
 
-        if (confirm.getResult() == ButtonType.YES) {
+        if (confirm) {
             String deleteSql = "DELETE FROM Violations WHERE ViolationID = ?";
-            String auditSql = "INSERT INTO AuditLogs (User, Action, Details) VALUES ('ADMIN', 'Deleted Record', ?)";
+            String auditSql = "INSERT INTO AuditLogs (User, Action, Details) VALUES (?, 'Deleted Record', ?)";
 
             try (Connection conn = DatabaseConnection.getConnection()) {
-                conn.setAutoCommit(false); // Enable transaction
+                conn.setAutoCommit(false); 
 
                 try (PreparedStatement psDelete = conn.prepareStatement(deleteSql);
                      PreparedStatement psAudit = conn.prepareStatement(auditSql)) {
@@ -252,32 +323,25 @@ public class RecordsPanel extends VBox {
                     psDelete.setInt(1, record.getId());
                     psDelete.executeUpdate();
 
-                    psAudit.setString(1, "Deleted violation record for student " + record.getIdNo());
+                    psAudit.setString(1, currentUserRole.toUpperCase());
+                    psAudit.setString(2, "Deleted violation record for student " + record.getIdNo());
                     psAudit.executeUpdate();
 
                     conn.commit();
 
-                    showAlert(Alert.AlertType.INFORMATION, "Success", "Record deleted successfully.");
+                    ui.components.CustomDialog.showMessage("Success", "Record deleted successfully.", false);
                     popupStage.close();
-                    loadDataFromDatabase(); // Refresh table
+                    loadDataFromDatabase(); 
 
                 } catch (SQLException ex) {
                     conn.rollback();
                     throw ex;
                 }
             } catch (SQLException e) {
-                showAlert(Alert.AlertType.ERROR, "Database Error", "Failed to delete record: " + e.getMessage());
+                ui.components.CustomDialog.showMessage("Database Error", "Failed to delete record: " + e.getMessage(), true);
                 e.printStackTrace();
             }
         }
-    }
-
-    private void showAlert(Alert.AlertType type, String title, String message) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 
     // --- DATABASE INTEGRATION ---
@@ -287,7 +351,6 @@ public class RecordsPanel extends VBox {
         }
         masterData.clear(); 
 
-        // Query UPDATED: Now fetches ViolationID as well
         String query = "SELECT ViolationID, Date, StudentName, StudentID, Course, Violation, Type, Sanction, Status FROM Violations ORDER BY Date DESC";
 
         try (Connection conn = DatabaseConnection.getConnection();
@@ -295,7 +358,7 @@ public class RecordsPanel extends VBox {
              ResultSet rs = pstmt.executeQuery()) {
 
             while (rs.next()) {
-                int id = rs.getInt("ViolationID"); // Crucial for edits/deletes
+                int id = rs.getInt("ViolationID"); 
                 String date = rs.getString("Date");
                 String name = rs.getString("StudentName");
                 String idNo = rs.getString("StudentID");
@@ -305,7 +368,6 @@ public class RecordsPanel extends VBox {
                 String sanction = rs.getString("Sanction");
                 String status = rs.getString("Status");
 
-                // Null safety
                 date = (date != null) ? date : "";
                 name = (name != null) ? name : "";
                 idNo = (idNo != null) ? idNo : "";
@@ -416,9 +478,9 @@ public class RecordsPanel extends VBox {
         return iv;
     }
 
-    // --- DATA MODEL (UPDATED) ---
+    // --- DATA MODEL ---
     public static class ViolationRecord {
-        private final int id; // Added DB ID for updating/deleting
+        private final int id; 
         private final javafx.beans.property.SimpleStringProperty date;
         private final javafx.beans.property.SimpleStringProperty name;
         private final javafx.beans.property.SimpleStringProperty idNo;
@@ -443,6 +505,7 @@ public class RecordsPanel extends VBox {
         public int getId() { return id; }
         public String getName() { return name.get(); }
         public String getIdNo() { return idNo.get(); }
+        public String getCourse() { return course.get(); }
         public String getStatus() { return status.get(); }
         public String getViolation() { return violation.get(); }
 

@@ -150,6 +150,17 @@ public class LoginFrame extends Application {
         // 8. Stage Setup
         Scene scene = new Scene(root, 1024, 768);
         primaryStage.setTitle("Quezon City University - Student Violation");
+        
+        // --- NEW: Application Logo ---
+        try {
+            InputStream iconStream = getClass().getResourceAsStream("/Icons/Logo.png");
+            if (iconStream != null) {
+                primaryStage.getIcons().add(new Image(iconStream));
+            }
+        } catch (Exception e) { 
+            System.out.println("Logo not found for stage icon."); 
+        }
+        
         primaryStage.setScene(scene);
         primaryStage.show();
         
@@ -185,9 +196,9 @@ public class LoginFrame extends Application {
                         // 1. Close the current Login Window
                         currentStage.close();
 
-                        // 2. Open the Main Dashboard (Now a JavaFX window!)
+                        // 2. Open the Main Dashboard (Now passing the role!)
                         try {
-                            MainFrame mainFrame = new MainFrame();
+                            MainFrame mainFrame = new MainFrame(role);
                             Stage mainStage = new Stage();
                             mainFrame.start(mainStage);
                         } catch (Exception ex) {
