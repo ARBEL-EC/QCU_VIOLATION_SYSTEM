@@ -74,10 +74,16 @@ public class MainFrame extends Application {
         
         // CATEGORY: SUPER ADMIN
         if ("Super Admin".equalsIgnoreCase(userRole)) {
-            sidebar.getChildren().add(createCategoryLabel("SUPER ADMIN")); 
+            sidebar.getChildren().add(createCategoryLabel("SUPER ADMIN"));
+
             Button btnUsers = createNavButton("User Management", false);
             btnUsers.setOnAction(e -> handleNavClick(btnUsers, "Users"));
-            sidebar.getChildren().add(btnUsers);
+            
+            // --- NEW: Archive Button ---
+            Button btnArchive = createNavButton("Archived Records", false);
+            btnArchive.setOnAction(e -> handleNavClick(btnArchive, "Archive"));
+            
+            sidebar.getChildren().addAll(btnUsers, btnArchive);
         }
 
         // CATEGORY: SETTINGS
@@ -245,6 +251,7 @@ public class MainFrame extends Application {
             case "Audit": activePanel = new AuditPanel(); break;
             case "Users": activePanel = new UserManagementPanel(); break;
             case "Settings": activePanel = new UserSettingsPanel(username, userRole); break;
+            case "Archive": activePanel = new ArchivePanel(username); break;
         }
 
         if (activePanel != null) {

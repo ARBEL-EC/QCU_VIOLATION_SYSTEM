@@ -76,6 +76,19 @@ public class LoginFrame extends Application {
         // 5. The Login Card Inputs
         TextField usernameField = createStyledTextField("Username");
         PasswordField passwordField = createStyledPasswordField("Password");
+        
+        // --- NEW: Pressing ENTER triggers login ---
+        usernameField.setOnKeyPressed(e -> {
+            if (e.getCode() == javafx.scene.input.KeyCode.ENTER) {
+                processLogin(usernameField.getText(), passwordField.getText(), primaryStage);
+            }
+        });
+        
+        passwordField.setOnKeyPressed(e -> {
+            if (e.getCode() == javafx.scene.input.KeyCode.ENTER) {
+                processLogin(usernameField.getText(), passwordField.getText(), primaryStage);
+            }
+        });
 
         // Login Button Container
         StackPane loginBtnContainer = new StackPane();

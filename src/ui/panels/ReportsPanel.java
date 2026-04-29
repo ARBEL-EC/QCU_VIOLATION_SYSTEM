@@ -1,5 +1,10 @@
 package ui.panels;
 
+import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
+
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Element;
@@ -73,8 +78,15 @@ public class ReportsPanel extends BorderPane {
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER_LEFT);
 
-        Text title = new Text("Reports");
+        Text title = new Text("REPORTS"); // Changed to ALL CAPS to match others
         title.setFont(Font.font("Poppins", FontWeight.BOLD, 32));
+        
+        LinearGradient titleGradient = new LinearGradient(
+                0, 0, 1, 0, true, CycleMethod.NO_CYCLE,
+                new Stop(0, Color.web("#004aad")),
+                new Stop(1, Color.web("#cb6ce6"))
+        );
+        title.setFill(titleGradient);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);

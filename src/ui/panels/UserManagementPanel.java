@@ -1,5 +1,10 @@
 package ui.panels;
 
+import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
+
 import db.DatabaseConnection;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -76,7 +81,14 @@ public class UserManagementPanel extends BorderPane {
         header.setAlignment(Pos.CENTER_LEFT);
 
         Text title = new Text("USER MANAGEMENT");
-        title.setFont(Font.font("ITC Avant Garde Gothic", FontWeight.BOLD, 28));
+        title.setFont(Font.font("ITC Avant Garde Gothic", FontWeight.BOLD, 42)); // Increased size slightly to match Dashboard
+        
+        LinearGradient titleGradient = new LinearGradient(
+                0, 0, 1, 0, true, CycleMethod.NO_CYCLE,
+                new Stop(0, Color.web("#004aad")),
+                new Stop(1, Color.web("#cb6ce6"))
+        );
+        title.setFill(titleGradient);
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);

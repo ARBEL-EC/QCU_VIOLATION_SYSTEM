@@ -1,5 +1,10 @@
 package ui.panels;
 
+import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
+
 import db.DatabaseConnection;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -25,8 +30,15 @@ public class UserSettingsPanel extends VBox {
         setPadding(new Insets(0)); 
 
         // Title
-        Text title = new Text("User Settings");
-        title.setFont(Font.font("Poppins", FontWeight.BOLD, 28));
+        Text title = new Text("USER SETTINGS");
+        title.setFont(Font.font("Poppins", FontWeight.BOLD, 42)); // Increased size to match Dashboard
+        
+        LinearGradient titleGradient = new LinearGradient(
+                0, 0, 1, 0, true, CycleMethod.NO_CYCLE,
+                new Stop(0, Color.web("#004aad")),
+                new Stop(1, Color.web("#cb6ce6"))
+        );
+        title.setFill(titleGradient);
 
         // Info Card
         VBox infoCard = createCard();

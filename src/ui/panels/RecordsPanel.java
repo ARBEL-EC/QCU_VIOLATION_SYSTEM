@@ -145,12 +145,17 @@ public class RecordsPanel extends VBox {
     // ==========================================
     private void openViewDetailsDialog(ViolationRecord record) {
         Stage popupStage = new Stage();
-        popupStage.initStyle(javafx.stage.StageStyle.UNDECORATED); // Hide title bar
+        // FIX: Change UNDECORATED to TRANSPARENT so the dark overlay works
+        popupStage.initStyle(javafx.stage.StageStyle.TRANSPARENT); 
         popupStage.initModality(Modality.APPLICATION_MODAL);
 
         VBox layout = new VBox(15);
         layout.setPadding(new Insets(30));
         layout.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-border-color: #d1d5db; -fx-border-width: 2; -fx-border-radius: 15;");
+        
+        // FIX: Add these two lines to stop it from stretching to full screen
+        layout.setMaxWidth(400); 
+        layout.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
         Text title = new Text("Record Details");
         title.setFont(Font.font("Poppins", FontWeight.BOLD, 24));
@@ -221,11 +226,13 @@ public class RecordsPanel extends VBox {
     // ==========================================
     private void openEditDialog(ViolationRecord record) {
         Stage popupStage = new Stage();
-        popupStage.initStyle(javafx.stage.StageStyle.UNDECORATED); 
+        // FIX: Change UNDECORATED to TRANSPARENT here as well
+        popupStage.initStyle(javafx.stage.StageStyle.TRANSPARENT); 
         popupStage.initModality(Modality.APPLICATION_MODAL);
 
         VBox layout = new VBox(15);
         layout.setPadding(new Insets(25));
+
         layout.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-border-color: #d1d5db; -fx-border-radius: 15;");
         layout.setMaxWidth(400);
         layout.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
