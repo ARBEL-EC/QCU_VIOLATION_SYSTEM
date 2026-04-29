@@ -85,20 +85,14 @@ public class DashboardPanel extends BorderPane {
         HBox.setHgrow(spacer, Priority.ALWAYS);
         
         // User Admin Profile Section
-        HBox userAdminArea = new HBox(10);
-        userAdminArea.setAlignment(Pos.CENTER_RIGHT); 
         
-        Label userLabel = new Label("USER ADMIN");
-        userLabel.setStyle("-fx-text-fill: #777777; -fx-font-size: 14px; -fx-font-family: 'ITC Avant Garde Gothic', sans-serif;");
-        ImageView userIcon = loadImageView("/Icons/admin.png", 35, 35);
+        
         
         // Minor mock dropdown arrow matching reference image
         Label dropdownArrow = new Label("v");
         dropdownArrow.setStyle("-fx-text-fill: #cccccc; -fx-font-size: 12px;");
         
-        userAdminArea.getChildren().addAll(userIcon, userLabel, dropdownArrow);
-        
-        headerArea.getChildren().addAll(title, spacer, userAdminArea);
+       
         return headerArea;
     }
 

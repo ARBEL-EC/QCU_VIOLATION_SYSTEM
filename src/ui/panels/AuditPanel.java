@@ -63,17 +63,8 @@ public class AuditPanel extends VBox {
         Region topSpacer = new Region();
         HBox.setHgrow(topSpacer, Priority.ALWAYS);
         
-        // User Admin Profile Section
-        HBox userAdminArea = new HBox(10);
-        userAdminArea.setAlignment(Pos.CENTER_RIGHT);
-        Label userLabel = new Label("USER ADMIN");
-        userLabel.setStyle("-fx-text-fill: #777777; -fx-font-size: 14px; -fx-font-family: 'ITC Avant Garde Gothic', sans-serif;");
-        ImageView userIcon = loadImageView("/Icons/admin.png", 35, 35);
         
-        userAdminArea.getChildren().addAll(userIcon, userLabel);
         
-        // Assemble Top Area
-        topArea.getChildren().addAll(searchContainer, topSpacer, userAdminArea);
 
         // ==========================================
         // 3. HEADER SECTION (TITLE)

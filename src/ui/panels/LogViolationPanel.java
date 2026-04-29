@@ -7,8 +7,6 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -23,6 +21,8 @@ import java.time.format.DateTimeFormatter;
 
 public class LogViolationPanel extends BorderPane {
 
+    private String currentUsername;
+    
     // Form Components
     private ComboBox<StudentItem> cmbStudent;
     private ComboBox<String> cmbCategory;
@@ -40,7 +40,11 @@ public class LogViolationPanel extends BorderPane {
     private final String LABEL_COLOR = "#6d6a6a";
     private final String BORDER_STYLE = "-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #d1d5db; -fx-border-radius: 8; -fx-padding: 2;";
 
-    public LogViolationPanel() {
+    
+    // --- FIX 1: Update constructor to accept the username ---
+    public LogViolationPanel(String username) {
+        this.currentUsername = username;
+        
         setPadding(new Insets(30, 40, 40, 40));
         
         // Build Layout
@@ -60,7 +64,7 @@ public class LogViolationPanel extends BorderPane {
     // ==========================================
     private HBox createHeader() {
         HBox header = new HBox();
-        header.setAlignment(Pos.CENTER); 
+        header.setAlignment(Pos.CENTER_LEFT); // Align left since right side is handled by MainFrame
         header.setPadding(new Insets(0, 0, 20, 0)); 
 
         // Header Title
@@ -70,33 +74,9 @@ public class LogViolationPanel extends BorderPane {
                 + "-fx-font-weight: bold; "
                 + "-fx-text-fill: linear-gradient(to right, #004aad, #cb6ce6);");
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        // User Admin Profile
-        HBox userAdminBox = new HBox(10); 
-        userAdminBox.setAlignment(Pos.CENTER_RIGHT);
-
-        ImageView userIcon = new ImageView();
-        try {
-            String imgPath = getClass().getResource("/Icons/admin.png").toExternalForm();
-            userIcon.setImage(new Image(imgPath));
-            userIcon.setFitWidth(35);  
-            userIcon.setFitHeight(35); 
-            userIcon.setPreserveRatio(true);
-            userIcon.setSmooth(true);
-        } catch (NullPointerException e) {
-            System.err.println("Warning: Icon not found at /Icons/admin.png");
-        }
-
-        Label lblUser = new Label("USER ADMIN");
-        lblUser.setStyle("-fx-text-fill: #777777; -fx-font-size: 14px; -fx-font-family: " + FONT_FAMILY + ";"); 
-
-        Label lblArrow = new Label("v"); 
-        lblArrow.setStyle("-fx-text-fill: #cccccc; -fx-font-size: 12px;"); 
-
-        userAdminBox.getChildren().addAll(userIcon, lblUser, lblArrow);
-        header.getChildren().addAll(lblTitle, spacer, userAdminBox);
+        // --- FIX 2: Removed the hardcoded "USER ADMIN" that was causing the overlap! ---
+        header.getChildren().add(lblTitle);
+        
         return header;
     }
 
@@ -159,7 +139,7 @@ public class LogViolationPanel extends BorderPane {
         boxSanction.getChildren().addAll(lblSanction, cmbSanction);
         formFields.getChildren().add(boxSanction);
 
-        // --- UPDATED Row 4: Violation Dropdown + Custom Text ---
+        // Row 4: Violation Dropdown + Custom Text
         VBox boxViolation = new VBox(5);
         Label lblViolation = createFormLabel("Violation Type:");
         
@@ -301,14 +281,13 @@ public class LogViolationPanel extends BorderPane {
         });
     }
 
-    // --- UPDATED VALIDATION ---
     private boolean validateFields() {
         if (cmbStudent.getValue() == null || cmbStudent.getEditor().getText().isEmpty()) return false;
         if (cmbCategory.getValue() == null) return false;
         if (datePicker.getValue() == null) return false;
         if (cmbSanction.getValue() == null) return false;
-        if (cmbSpecificViolation.getValue() == null) return false; // Prevent empty dropdown
-        if ("Other".equals(cmbSpecificViolation.getValue()) && txtDescription.getText().trim().isEmpty()) return false; // Prevent empty "Other" text
+        if (cmbSpecificViolation.getValue() == null) return false; 
+        if ("Other".equals(cmbSpecificViolation.getValue()) && txtDescription.getText().trim().isEmpty()) return false; 
         return true;
     }
 
@@ -334,12 +313,11 @@ public class LogViolationPanel extends BorderPane {
             filteredStudents.setAll(allStudents);
             
         } catch (Exception e) {
-            System.err.println("Warning: Could not load students. Ensure 'Students' table exists with columns StudentID, Name, Course.");
+            System.err.println("Warning: Could not load students.");
             e.printStackTrace();
         }
     }
 
-    // --- UPDATED SAVE RECORD ---
     private void saveRecord() {
         if (!validateFields()) {
             ui.components.CustomDialog.showMessage("Validation Error", "Please fill up all required fields.", true);
@@ -351,7 +329,8 @@ public class LogViolationPanel extends BorderPane {
         String sqlViolation = "INSERT INTO Violations (Date, StudentID, StudentName, Course, Location, Violation, Type, Sanction, Status) " +
                               "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending');";
                               
-        String sqlAudit = "INSERT INTO AuditLogs (User, Action, Details) VALUES ('SYSTEM', 'Logged Violation', ?);";
+        // --- FIX 3: Update SQL to use ? instead of 'SYSTEM' ---
+        String sqlAudit = "INSERT INTO AuditLogs (User, Action, Details) VALUES (?, 'Logged Violation', ?);";
 
         try (Connection conn = DatabaseConnection.getConnection()) {
             conn.setAutoCommit(false); 
@@ -365,7 +344,6 @@ public class LogViolationPanel extends BorderPane {
                 psVio.setString(4, selectedStudent.getCourse());
                 psVio.setString(5, ""); 
                 
-                // Determine what text to save based on the dropdown selection
                 String finalViolationText = "Other".equals(cmbSpecificViolation.getValue()) ? 
                                 txtDescription.getText().trim() : 
                                 cmbSpecificViolation.getValue();
@@ -376,7 +354,10 @@ public class LogViolationPanel extends BorderPane {
                 psVio.executeUpdate();
 
                 String auditDetails = "Logged " + cmbCategory.getValue() + " violation for " + selectedStudent.getId();
-                psAudit.setString(1, auditDetails);
+                
+                // --- FIX 4: Inject the real username here ---
+                psAudit.setString(1, currentUsername);
+                psAudit.setString(2, auditDetails);
                 psAudit.executeUpdate();
 
                 conn.commit();
@@ -401,9 +382,9 @@ public class LogViolationPanel extends BorderPane {
         cmbCategory.getSelectionModel().clearSelection();
         datePicker.setValue(LocalDate.now());
         cmbSanction.getSelectionModel().clearSelection();
-        cmbSpecificViolation.getSelectionModel().clearSelection(); // Reset violation dropdown
+        cmbSpecificViolation.getSelectionModel().clearSelection(); 
         txtDescription.clear();
-        txtDescription.setDisable(true); // Re-disable custom text box
+        txtDescription.setDisable(true); 
         filteredStudents.setAll(allStudents); 
     }
 

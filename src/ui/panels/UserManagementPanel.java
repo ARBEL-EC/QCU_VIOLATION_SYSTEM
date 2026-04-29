@@ -1,7 +1,6 @@
 package ui.panels;
 
 import db.DatabaseConnection;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -47,7 +46,6 @@ public class UserManagementPanel extends BorderPane {
         TableColumn<UserItem, String> colRole = new TableColumn<>("Role");
         colRole.setCellValueFactory(new PropertyValueFactory<>("role"));
         
-        // --- TABLE STYLING: Add the pill badge to the Role column ---
         colRole.setCellFactory(column -> new TableCell<UserItem, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -121,11 +119,7 @@ public class UserManagementPanel extends BorderPane {
 
     private void deleteSelectedUser() {
         UserItem selected = table.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            ui.components.CustomDialog.showMessage("No Selection", "Please select a user to delete.", true);
-            return;
-        }
-
+        if (selected == null) return;
         if (selected.getUsername().equalsIgnoreCase("admin") || selected.getUsername().equalsIgnoreCase("superadmin")) {
             ui.components.CustomDialog.showMessage("Access Denied", "You cannot delete the primary Super Admin.", true);
             return;
@@ -148,12 +142,14 @@ public class UserManagementPanel extends BorderPane {
         
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.initStyle(StageStyle.TRANSPARENT); // REQUIRED FOR OVERLAY
+        dialog.initStyle(StageStyle.UNDECORATED); // FIX: Completely removes the title bar
 
         VBox layout = new VBox(15);
         layout.setPadding(new Insets(25));
         layout.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #d1d5db; -fx-border-width: 2; -fx-border-radius: 10;");
-        layout.setMaxWidth(350);
+        
+        // FIX: Wider layout box for Add User
+        layout.setPrefWidth(450);
         layout.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
         Text title = new Text(isEdit ? "Edit User" : "Add New User");
@@ -235,7 +231,6 @@ public class UserManagementPanel extends BorderPane {
         scene.setFill(Color.TRANSPARENT);
         dialog.setScene(scene);
 
-        // Match main window bounds
         javafx.stage.Window mainWindow = this.getScene().getWindow();
         if(mainWindow != null) {
             dialog.initOwner(mainWindow);

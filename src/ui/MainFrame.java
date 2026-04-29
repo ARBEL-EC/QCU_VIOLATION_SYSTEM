@@ -110,31 +110,53 @@ public class MainFrame extends Application {
         // ==========================================
         BorderPane contentPane = new BorderPane();
         
-        // --- DYNAMIC TOP HEADER ---
+       // --- DYNAMIC TOP HEADER ---
         HBox topHeader = new HBox(15);
         topHeader.setAlignment(Pos.CENTER_RIGHT);
         topHeader.setPadding(new Insets(20, 40, 10, 40));
         
-        TextField searchBar = new TextField();
-        searchBar.setPromptText("Search Action or User...");
-        searchBar.setPrefWidth(300);
-        searchBar.setStyle("-fx-background-radius: 20; -fx-border-radius: 20; -fx-border-color: #d1d5db; -fx-background-color: white; -fx-padding: 5 15;");
-        
         Region headerSpacer = new Region();
-        HBox.setHgrow(headerSpacer, Priority.ALWAYS);
+        HBox.setHgrow(headerSpacer, Priority.ALWAYS); 
         
-        // User Profile Area
-        ImageView profileIcon = loadImageView("/Icons/user_icon.png", 35, 35); // Optional: Add a user icon to your folder
+        // 1. The User Logo 
+        ImageView profileIcon = loadImageView("/Icons/admin.png", 35, 35); 
+        javafx.scene.shape.Circle clip = new javafx.scene.shape.Circle(17.5, 17.5, 17.5);
+        profileIcon.setClip(clip);
+
+        // 2. The Username
         Text txtUsername = new Text(username.toUpperCase());
         txtUsername.setFont(Font.font("System", FontWeight.BOLD, 14));
         txtUsername.setFill(Color.web("#4b5563"));
         
-        HBox userBox = new HBox(10, profileIcon, txtUsername);
-        userBox.setAlignment(Pos.CENTER);
-        
-        topHeader.getChildren().addAll(searchBar, headerSpacer, userBox);
-        contentPane.setTop(topHeader);
+        // 3. The Dropdown Arrow (Restored!)
+        Label lblArrow = new Label("▼"); 
+        lblArrow.setStyle("-fx-text-fill: #cccccc; -fx-font-size: 10px; -fx-padding: 2 0 0 0;");
 
+        // 4. Group them all together
+        HBox userBox = new HBox(10, profileIcon, txtUsername, lblArrow);
+        userBox.setAlignment(Pos.CENTER);
+        userBox.setStyle("-fx-cursor: hand; -fx-padding: 5 10; -fx-background-radius: 20; -fx-background-color: transparent;");
+        
+        // --- ADDED: Hover Effects ---
+        userBox.setOnMouseEntered(e -> userBox.setStyle("-fx-cursor: hand; -fx-padding: 5 10; -fx-background-radius: 20; -fx-background-color: #e5e7eb;"));
+        userBox.setOnMouseExited(e -> userBox.setStyle("-fx-cursor: hand; -fx-padding: 5 10; -fx-background-radius: 20; -fx-background-color: transparent;"));
+        
+        // --- ADDED: Click Event to Open Settings ---
+        userBox.setOnMouseClicked(e -> {
+            // Find the "User Settings" button in the sidebar list so it highlights correctly
+            Button settingsBtn = navButtons.stream()
+                .filter(btn -> btn.getText().equals("User Settings"))
+                .findFirst()
+                .orElse(null);
+            
+            // Trigger the panel change!
+            handleNavClick(settingsBtn, "Settings");
+        });
+        
+        topHeader.getChildren().addAll(headerSpacer, userBox);
+        contentPane.setTop(topHeader);
+        
+        
         // --- FULLSCREEN FIX ---
         mainContentArea = new StackPane();
         mainContentArea.setPadding(new Insets(20, 40, 40, 40));
@@ -217,8 +239,8 @@ public class MainFrame extends Application {
         Region activePanel = null;
         switch (panelName) {
             case "Dashboard": activePanel = new DashboardPanel(); break;
-            case "LogViolation": activePanel = new LogViolationPanel(); break;
-            case "Records": activePanel = new RecordsPanel(userRole); break;
+            case "LogViolation": activePanel = new LogViolationPanel(username); break;
+            case "Records": activePanel = new RecordsPanel(userRole, username); break;
             case "Reports": activePanel = new ReportsPanel(); break;    
             case "Audit": activePanel = new AuditPanel(); break;
             case "Users": activePanel = new UserManagementPanel(); break;
