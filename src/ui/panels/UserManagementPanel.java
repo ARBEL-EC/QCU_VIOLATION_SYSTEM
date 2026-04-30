@@ -198,6 +198,17 @@ public class UserManagementPanel extends BorderPane {
                 return;
             }
 
+            // --- NEW: STRONG PASSWORD VALIDATION ---
+            if (!pass.isEmpty()) {
+                String passwordRegex = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&#])[A-Za-z\\d@$!%*?&#]{8,}$";
+                if (!pass.matches(passwordRegex)) {
+                    ui.components.CustomDialog.showMessage("Weak Password", 
+                        "Password must be at least 8 characters long, contain 1 uppercase letter, 1 number, and 1 special character.", true);
+                    return;
+                }
+            }
+           
+
             try (Connection conn = DatabaseConnection.getConnection()) {
                 if (isEdit) {
                     if (pass.isEmpty()) {

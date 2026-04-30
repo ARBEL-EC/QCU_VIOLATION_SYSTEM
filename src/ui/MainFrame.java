@@ -67,9 +67,16 @@ public class MainFrame extends Application {
         // CATEGORY: ADMINISTRATION
         if ("Admin".equalsIgnoreCase(userRole) || "Super Admin".equalsIgnoreCase(userRole)) {
             sidebar.getChildren().add(createCategoryLabel("ADMINISTRATION"));
+            
+            // --- NEW: Student Management Button ---
+            Button btnStudents = createNavButton("Students", false);
+            btnStudents.setOnAction(e -> handleNavClick(btnStudents, "Students"));
+            
             Button btnAudit = createNavButton("Audit Logs", false);
             btnAudit.setOnAction(e -> handleNavClick(btnAudit, "Audit"));
-            sidebar.getChildren().add(btnAudit);
+            
+            // MAKE SURE BOTH BUTTONS ARE ADDED HERE:
+            sidebar.getChildren().addAll(btnStudents, btnAudit);
         }
         
         // CATEGORY: SUPER ADMIN
@@ -249,6 +256,7 @@ public class MainFrame extends Application {
             case "Records": activePanel = new RecordsPanel(userRole, username); break;
             case "Reports": activePanel = new ReportsPanel(); break;    
             case "Audit": activePanel = new AuditPanel(); break;
+            case "Students": activePanel = new StudentManagementPanel(); break;
             case "Users": activePanel = new UserManagementPanel(); break;
             case "Settings": activePanel = new UserSettingsPanel(username, userRole); break;
             case "Archive": activePanel = new ArchivePanel(username); break;

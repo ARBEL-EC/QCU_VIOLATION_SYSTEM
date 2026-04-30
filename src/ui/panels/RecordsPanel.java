@@ -46,52 +46,28 @@ public class RecordsPanel extends VBox {
         setAlignment(Pos.TOP_CENTER);
 
         // ==========================================
-        // 2. TOP SECTION (SEARCH BAR)
-        // ==========================================
-        HBox topArea = new HBox();
-        topArea.setAlignment(Pos.CENTER);
-        topArea.setPadding(new Insets(0, 0, 15, 0));
-
-        TextField searchField = new TextField();
-        searchField.setPromptText("Search by student no. or name");
-        searchField.setPrefWidth(400);
-        searchField.setPrefHeight(45);
-        searchField.setStyle("-fx-background-radius: 25; -fx-border-radius: 25; -fx-border-color: #333333; -fx-border-width: 1.5; -fx-background-color: transparent; -fx-padding: 0 15 0 40; -fx-font-family: 'ITC Avant Garde Gothic', sans-serif; -fx-font-size: 14px;");
-        
-        Label searchIcon = new Label("🔍");
-        searchIcon.setStyle("-fx-text-fill: #555555; -fx-font-size: 16px;");
-        StackPane searchContainer = new StackPane(searchField, searchIcon);
-        StackPane.setAlignment(searchIcon, Pos.CENTER_LEFT);
-        StackPane.setMargin(searchIcon, new Insets(0, 0, 0, 15));
-        
-        Region topSpacer = new Region();
-        HBox.setHgrow(topSpacer, Priority.ALWAYS);
-
-        topArea.getChildren().addAll(searchContainer, topSpacer); // Add search bar to UI
-
-        // ==========================================
-        // 3. HEADER SECTION (TITLE & ACTION BUTTONS)
+        // 2. HEADER SECTION (TITLE ON TOP LEFT)
         // ==========================================
         HBox headerArea = new HBox(15);
-        headerArea.setAlignment(Pos.BOTTOM_LEFT);
-        
+        headerArea.setAlignment(Pos.CENTER_LEFT);
+        headerArea.setPadding(new Insets(0, 0, 10, 0));
+
         Text title = new Text("STUDENT RECORDS");
         title.setFont(Font.font("Poppins", FontWeight.BOLD, 42));
-        
+
         LinearGradient titleGradient = new LinearGradient(
                 0, 0, 1, 0, true, CycleMethod.NO_CYCLE,
                 new Stop(0, Color.web("#004aad")),
                 new Stop(1, Color.web("#cb6ce6"))
         );
         title.setFill(titleGradient);
-        
+
         Region headerSpacer = new Region();
         HBox.setHgrow(headerSpacer, Priority.ALWAYS);
-        
+
         Button btnView = new Button("VIEW DETAILS");
         btnView.setPrefHeight(30);
         btnView.setStyle("-fx-background-color: #004aad; -fx-text-fill: white; -fx-background-radius: 15; -fx-font-family: 'ITC Avant Garde Gothic', sans-serif; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 15;");
-        
         btnView.setOnAction(e -> {
             ViolationRecord selectedRecord = table.getSelectionModel().getSelectedItem();
             if (selectedRecord == null) {
@@ -104,7 +80,6 @@ public class RecordsPanel extends VBox {
         Button btnEdit = new Button("EDIT");
         btnEdit.setPrefHeight(30);
         btnEdit.setStyle("-fx-background-color: #ff4d4d; -fx-text-fill: white; -fx-background-radius: 15; -fx-font-family: 'ITC Avant Garde Gothic', sans-serif; -fx-font-weight: bold; -fx-cursor: hand; -fx-padding: 5 15;");
-        
         btnEdit.setOnAction(e -> {
             ViolationRecord selectedRecord = table.getSelectionModel().getSelectedItem();
             if (selectedRecord == null) {
@@ -117,90 +92,184 @@ public class RecordsPanel extends VBox {
         headerArea.getChildren().addAll(title, headerSpacer, btnView, btnEdit);
 
         // ==========================================
+        // 3. FILTER & SEARCH SECTION (BELOW TITLE)
+        // ==========================================
+        HBox filterArea = new HBox(15);
+        filterArea.setAlignment(Pos.CENTER_LEFT);
+        filterArea.setPadding(new Insets(0, 0, 15, 0));
+
+        // Search Bar
+        TextField searchField = new TextField();
+        searchField.setPromptText("Search by student no. or name");
+        searchField.setPrefWidth(350);
+        searchField.setPrefHeight(40);
+        searchField.setStyle("-fx-background-radius: 20; -fx-border-radius: 20; -fx-border-color: #d1d5db; -fx-background-color: white; -fx-padding: 0 15 0 35; -fx-font-family: 'ITC Avant Garde Gothic', sans-serif;");
+
+        Label searchIcon = new Label("🔍");
+        searchIcon.setStyle("-fx-text-fill: #9ca3af; -fx-font-size: 14px;");
+        StackPane searchContainer = new StackPane(searchField, searchIcon);
+        StackPane.setAlignment(searchIcon, Pos.CENTER_LEFT);
+        StackPane.setMargin(searchIcon, new Insets(0, 0, 0, 12));
+
+        Region filterSpacer = new Region();
+        HBox.setHgrow(filterSpacer, Priority.ALWAYS);
+
+        // Category Filter Dropdown
+        ComboBox<String> cmbCategoryFilter = new ComboBox<>(FXCollections.observableArrayList(
+                "All Categories", "Minor", "Major"
+        ));
+        cmbCategoryFilter.setValue("All Categories");
+        cmbCategoryFilter.setPrefHeight(40);
+        cmbCategoryFilter.setStyle("-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #d1d5db; -fx-background-color: white; -fx-font-family: 'ITC Avant Garde Gothic', sans-serif;");
+
+        // --- NEW: Sanction Filter Dropdown ---
+        ComboBox<String> cmbSanctionFilter = new ComboBox<>(FXCollections.observableArrayList(
+                "All Sanctions", "Warning", "Community Service", "Suspension", "Drop", "Call Parent"
+        ));
+        cmbSanctionFilter.setValue("All Sanctions");
+        cmbSanctionFilter.setPrefHeight(40);
+        cmbSanctionFilter.setStyle("-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #d1d5db; -fx-background-color: white; -fx-font-family: 'ITC Avant Garde Gothic', sans-serif;");
+
+        // Status Filter Dropdown
+        ComboBox<String> cmbStatusFilter = new ComboBox<>(FXCollections.observableArrayList(
+                "All Statuses", "Pending", "On Going", "Resolved"
+        ));
+        cmbStatusFilter.setValue("All Statuses");
+        cmbStatusFilter.setPrefHeight(40);
+        cmbStatusFilter.setStyle("-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #d1d5db; -fx-background-color: white; -fx-font-family: 'ITC Avant Garde Gothic', sans-serif;");
+
+        // Add ALL of them to the filterArea
+        filterArea.getChildren().addAll(searchContainer, filterSpacer, cmbCategoryFilter, cmbSanctionFilter, cmbStatusFilter);
+
+        // ==========================================
         // 4. TABLE VIEW SETUP
         // ==========================================
         setupTable();
-
         VBox tableCard = new VBox(table);
         tableCard.getStyleClass().add("table-container");
-        tableCard.setPadding(new Insets(15, 20, 20, 20)); 
-        VBox.setVgrow(table, Priority.ALWAYS); 
+        tableCard.setPadding(new Insets(15, 20, 20, 20));
+
+        VBox.setVgrow(table, Priority.ALWAYS);
         VBox.setVgrow(tableCard, Priority.ALWAYS);
 
         try {
             String cssPath = getClass().getResource("/ui/panels/table-style.css").toExternalForm();
             getStylesheets().add(cssPath);
-        } catch (Exception e) {
-            System.err.println("WARNING: Could not load table-style.css.");
-        }
+        } catch (Exception e) {}
 
-        getChildren().addAll(topArea, headerArea, tableCard);
-        
-        setupSearchFilter(searchField);
+        // Add the new ordered sections to the main panel
+        getChildren().addAll(headerArea, filterArea, tableCard);
+
+        // Link the filters together (Now with 4 total parameters!)
+        setupSearchFilter(searchField, cmbCategoryFilter, cmbSanctionFilter, cmbStatusFilter);
         loadDataFromDatabase();
     }
 
     // ==========================================
     // VIEW FULL DETAILS DIALOG
     // ==========================================
+    // ==========================================
+    // VIEW FULL DETAILS DIALOG (UPDATED UI)
+    // ==========================================
+    // ==========================================
+    // VIEW FULL DETAILS DIALOG (WIDER & JUSTIFIED)
+    // ==========================================
     private void openViewDetailsDialog(ViolationRecord record) {
         Stage popupStage = new Stage();
-        // FIX: Change UNDECORATED to TRANSPARENT so the dark overlay works
         popupStage.initStyle(javafx.stage.StageStyle.TRANSPARENT); 
         popupStage.initModality(Modality.APPLICATION_MODAL);
 
-        VBox layout = new VBox(15);
-        layout.setPadding(new Insets(30));
-        layout.setStyle("-fx-background-color: white; -fx-background-radius: 15; -fx-border-color: #d1d5db; -fx-border-width: 2; -fx-border-radius: 15;");
+        // Main Card Layout - INCREASED PADDING
+        VBox layout = new VBox(25);
+        layout.setPadding(new Insets(35, 45, 40, 45)); 
+        layout.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #d1d5db; -fx-border-width: 1; -fx-border-radius: 10;");
         
-        // FIX: Add these two lines to stop it from stretching to full screen
-        layout.setMaxWidth(400); 
+        // --- INCREASED WIDTH TO 750px TO OCCUPY MORE SPACE ---
+        layout.setMaxWidth(750); 
         layout.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
 
-        Text title = new Text("Record Details");
-        title.setFont(Font.font("Poppins", FontWeight.BOLD, 24));
-        title.setFill(Color.web("#004aad"));
+        // --- 1. HEADER (Title & Close Button) ---
+        HBox header = new HBox();
+        header.setAlignment(Pos.CENTER_LEFT);
+        
+        Text title = new Text("INCIDENT DETAILS"); // Made uppercase to match panels
+        title.setFont(Font.font("Poppins", FontWeight.BOLD, 22)); // Switched to Poppins
+        
+        // Added the universal gradient!
+        LinearGradient titleGradient = new LinearGradient(
+                0, 0, 1, 0, true, CycleMethod.NO_CYCLE,
+                new Stop(0, Color.web("#004aad")),
+                new Stop(1, Color.web("#cb6ce6"))
+        );
+        title.setFill(titleGradient);
+        
+        Region headerSpacer = new Region();
+        HBox.setHgrow(headerSpacer, Priority.ALWAYS);
+        
+        Label btnClose = new Label("✕");
+        btnClose.setStyle("-fx-font-size: 18px; -fx-text-fill: #6b7280; -fx-cursor: hand; -fx-font-weight: bold;");
+        btnClose.setOnMouseClicked(e -> popupStage.close());
+        
+        header.getChildren().addAll(title, headerSpacer, btnClose);
 
+        // --- 2. GRID DETAILS (2 Columns) ---
         GridPane grid = new GridPane();
-        grid.setVgap(12);
-        grid.setHgap(20);
+        grid.setVgap(18); // Increased vertical spacing
         
-        String styleLabel = "-fx-font-weight: bold; -fx-text-fill: #555555; -fx-font-family: 'ITC Avant Garde Gothic', sans-serif; -fx-font-size: 14px;";
-        String styleValue = "-fx-text-fill: #000000; -fx-font-family: 'ITC Avant Garde Gothic', sans-serif; -fx-font-size: 14px;";
-
-        grid.addRow(0, createStyledLabel("Name:", styleLabel), createStyledLabel(record.getName(), styleValue));
-        grid.addRow(1, createStyledLabel("Student ID:", styleLabel), createStyledLabel(record.getIdNo(), styleValue));
-        grid.addRow(2, createStyledLabel("Course:", styleLabel), createStyledLabel(record.getCourse(), styleValue));
-        grid.addRow(3, createStyledLabel("Date:", styleLabel), createStyledLabel(record.dateProperty().get(), styleValue));
-        grid.addRow(4, createStyledLabel("Type:", styleLabel), createStyledLabel(record.typeProperty().get(), styleValue));
-        grid.addRow(5, createStyledLabel("Sanction:", styleLabel), createStyledLabel(record.sanctionProperty().get(), styleValue));
-        grid.addRow(6, createStyledLabel("Status:", styleLabel), createStyledLabel(record.getStatus(), styleValue));
+        // --- INCREASED HORIZONTAL GAP TO SPREAD COLUMNS ---
+        grid.setHgap(150); 
         
-        Label lblDesc = createStyledLabel("Description:", styleLabel);
-        Label valDesc = createStyledLabel(record.getViolation(), styleValue);
-        valDesc.setWrapText(true);
-        valDesc.setMaxWidth(300);
-        grid.addRow(7, lblDesc, valDesc);
+        String boldStyle = "-fx-font-family: 'Segoe UI', sans-serif; -fx-font-weight: bold; -fx-text-fill: #111827; -fx-font-size: 14px;";
+        String normalStyle = "-fx-font-family: 'Segoe UI', sans-serif; -fx-text-fill: #374151; -fx-font-size: 14px;";
+        
+        grid.add(createDetailRow("Student:", record.getName(), boldStyle, normalStyle), 0, 0);
+        grid.add(createDetailRow("ID:", record.getIdNo(), boldStyle, normalStyle), 1, 0);
+        
+        grid.add(createDetailRow("Category:", record.getType().toLowerCase(), boldStyle, normalStyle), 0, 1);
+        grid.add(createDetailRow("Date:", record.dateProperty().get(), boldStyle, normalStyle), 1, 1);
+        
+        grid.add(createDetailRow("Course:", record.getCourse(), boldStyle, normalStyle), 0, 2);
 
-        Button btnClose = new Button("Close");
-        btnClose.setStyle("-fx-background-color: #e5e7eb; -fx-text-fill: #6b7280; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 8 20; -fx-cursor: hand;");
-        btnClose.setOnAction(e -> popupStage.close());
+        // --- 3. DESCRIPTION SECTION ---
+        VBox descBox = new VBox(8);
+        Label lblDescTitle = new Label("Violation:");
+        lblDescTitle.setStyle(boldStyle);
+        Label lblDescText = new Label(record.getViolation());
+        lblDescText.setStyle(normalStyle);
+        lblDescText.setWrapText(true);
+        descBox.getChildren().addAll(lblDescTitle, lblDescText);
 
-        HBox btnBox = new HBox(btnClose);
-        btnBox.setAlignment(Pos.CENTER_RIGHT);
-        btnBox.setPadding(new Insets(10, 0, 0, 0));
+        // --- 4. SANCTIONS & STATUS PILL ---
+        VBox sanctionBox = new VBox(10);
+        Label lblSanctionTitle = new Label("Sanctions:");
+        lblSanctionTitle.setStyle(boldStyle);
+        
+        HBox sanctionContainer = new HBox(12);
+        sanctionContainer.setAlignment(Pos.CENTER_LEFT);
+        sanctionContainer.setPadding(new Insets(12, 15, 12, 15));
+        sanctionContainer.setStyle("-fx-border-color: #e5e7eb; -fx-border-radius: 6; -fx-background-radius: 6; -fx-background-color: #ffffff;");
+        
+        Label lblSanctionText = new Label(record.getSanction() + " — ");
+        lblSanctionText.setStyle("-fx-font-family: 'Segoe UI', sans-serif; -fx-text-fill: #111827; -fx-font-size: 14px; -fx-font-weight: bold;");
+        
+        Label lblStatusBadge = new Label(record.getStatus().toLowerCase());
+        lblStatusBadge.setStyle("-fx-background-color: #f3f4f6; -fx-text-fill: #374151; -fx-padding: 4 14; -fx-background-radius: 12; -fx-font-size: 12px; -fx-font-weight: bold;");
+        
+        sanctionContainer.getChildren().addAll(lblSanctionText, lblStatusBadge);
+        sanctionBox.getChildren().addAll(lblSanctionTitle, sanctionContainer);
 
-        layout.getChildren().addAll(title, grid, btnBox);
+        // --- ASSEMBLE LAYOUT ---
+        layout.getChildren().addAll(header, grid, descBox, sanctionBox);
 
-        // Dark Overlay for modern popup look
+        // Apply Dark Overlay
         StackPane darkOverlay = new StackPane(layout);
-        darkOverlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);"); 
+        darkOverlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.4);");
         darkOverlay.setPadding(new Insets(20));
 
         Scene scene = new Scene(darkOverlay);
         scene.setFill(Color.TRANSPARENT);
         popupStage.setScene(scene);
-        
+
         javafx.stage.Window mainWindow = this.getScene().getWindow();
         if(mainWindow != null) {
             popupStage.initOwner(mainWindow);
@@ -211,7 +280,6 @@ public class RecordsPanel extends VBox {
         } else {
             popupStage.centerOnScreen();
         }
-
         popupStage.showAndWait();
     }
     
@@ -277,9 +345,8 @@ public class RecordsPanel extends VBox {
         btnSave.setOnAction(e -> updateRecord(record, cmbStatus.getValue(), txtViolation.getText().trim(), popupStage));
 
         if ("Staff".equalsIgnoreCase(currentUserRole)) {
-            btnDelete.setVisible(false); 
-            txtViolation.setEditable(false); 
-            txtViolation.setStyle("-fx-control-inner-background: #f3f4f6; -fx-text-fill: #9ca3af; -fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #d1d5db;");
+            btnDelete.setVisible(false); // Keep delete hidden for Staff
+            // Removed the lock on txtViolation so Staff can edit it!
         }
 
         buttonBox.getChildren().addAll(btnCancel, btnDelete, btnSave);
@@ -454,7 +521,7 @@ public class RecordsPanel extends VBox {
         colViolation.setCellValueFactory(data -> data.getValue().violationProperty());
         colViolation.setPrefWidth(200); 
 
-        TableColumn<ViolationRecord, String> colType = new TableColumn<>("Type");
+        TableColumn<ViolationRecord, String> colType = new TableColumn<>("Category");
         colType.setCellValueFactory(data -> data.getValue().typeProperty());
         colType.setPrefWidth(80);
         colType.setMaxWidth(100);
@@ -471,28 +538,67 @@ public class RecordsPanel extends VBox {
         table.getColumns().addAll(colDate, colName, colId, colCourse, colViolation, colType, colSanction, colStatus);
     }
 
+    // --- UI HELPER FOR VIEW DETAILS ---
+    private HBox createDetailRow(String title, String value, String boldStyle, String normalStyle) {
+        HBox box = new HBox(5);
+        Label lblTitle = new Label(title);
+        lblTitle.setStyle(boldStyle);
+        Label lblValue = new Label(value);
+        lblValue.setStyle(normalStyle);
+        box.getChildren().addAll(lblTitle, lblValue);
+        return box;
+    }
+    
+    
     // --- SEARCH FILTER LOGIC ---
-    private void setupSearchFilter(TextField searchField) {
+    // --- ADVANCED 4-WAY FILTER LOGIC ---
+    private void setupSearchFilter(TextField searchField, ComboBox<String> cmbCategory, ComboBox<String> cmbSanction, ComboBox<String> cmbStatus) {
         if (masterData == null) {
             masterData = FXCollections.observableArrayList();
         }
         
         FilteredList<ViolationRecord> filteredData = new FilteredList<>(masterData, p -> true);
 
-        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+        Runnable updateFilters = () -> {
             filteredData.setPredicate(record -> {
-                if (newValue == null || newValue.isEmpty()) {
-                    return true;
-                }
-                String lowerCaseFilter = newValue.toLowerCase();
-                if (record.getName().toLowerCase().contains(lowerCaseFilter)) {
-                    return true; 
-                } else if (record.getIdNo().toLowerCase().contains(lowerCaseFilter)) {
-                    return true; 
-                }
-                return false; 
+                String searchText = searchField.getText() == null ? "" : searchField.getText().toLowerCase();
+                String selectedCategory = cmbCategory.getValue();
+                String selectedSanction = cmbSanction.getValue();
+                String selectedStatus = cmbStatus.getValue();
+
+                // 1. Text Search Logic
+                boolean matchesText = searchText.isEmpty() 
+                    || record.getName().toLowerCase().contains(searchText)
+                    || record.getIdNo().toLowerCase().contains(searchText)
+                    || record.getCourse().toLowerCase().contains(searchText)
+                    || record.getDate().toLowerCase().contains(searchText)
+                    || record.getViolation().toLowerCase().contains(searchText)
+                    || record.getType().toLowerCase().contains(searchText)
+                    || record.getSanction().toLowerCase().contains(searchText)
+                    || record.getStatus().toLowerCase().contains(searchText);
+
+                // 2. Category Dropdown Logic
+                boolean matchesCategory = "All Categories".equals(selectedCategory) 
+                    || record.getType().equalsIgnoreCase(selectedCategory);
+
+                // 3. Sanction Dropdown Logic (NEW)
+                boolean matchesSanction = "All Sanctions".equals(selectedSanction) 
+                    || record.getSanction().equalsIgnoreCase(selectedSanction);
+
+                // 4. Status Dropdown Logic
+                boolean matchesStatus = "All Statuses".equals(selectedStatus) 
+                    || record.getStatus().equalsIgnoreCase(selectedStatus);
+
+                // Must match ALL conditions
+                return matchesText && matchesCategory && matchesSanction && matchesStatus;
             });
-        });
+        };
+
+        // Attach listeners to everything
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> updateFilters.run());
+        cmbCategory.valueProperty().addListener((obs, oldVal, newVal) -> updateFilters.run());
+        cmbSanction.valueProperty().addListener((obs, oldVal, newVal) -> updateFilters.run());
+        cmbStatus.valueProperty().addListener((obs, oldVal, newVal) -> updateFilters.run());
 
         SortedList<ViolationRecord> sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(table.comparatorProperty());
@@ -529,6 +635,9 @@ public class RecordsPanel extends VBox {
         public String getCourse() { return course.get(); }
         public String getStatus() { return status.get(); }
         public String getViolation() { return violation.get(); }
+        public String getDate() { return date.get(); }
+        public String getType() { return type.get(); }
+        public String getSanction() { return sanction.get(); }
 
         public javafx.beans.property.StringProperty dateProperty() { return date; }
         public javafx.beans.property.StringProperty nameProperty() { return name; }

@@ -109,7 +109,7 @@ public class LogViolationPanel extends BorderPane {
         VBox boxCategory = new VBox(5);
         Label lblCategory = createFormLabel("Type"); 
         cmbCategory = new ComboBox<>(FXCollections.observableArrayList("MINOR", "MAJOR"));
-        cmbCategory.setPromptText("MINOR");
+        cmbCategory.setPromptText("Select Type...");
         cmbCategory.setMaxWidth(Double.MAX_VALUE);
         cmbCategory.setStyle(BORDER_STYLE);
         HBox.setHgrow(boxCategory, Priority.ALWAYS);
@@ -133,7 +133,7 @@ public class LogViolationPanel extends BorderPane {
         cmbSanction = new ComboBox<>(FXCollections.observableArrayList(
                 "Warning", "Community Service", "Suspension", "Drop", "Call Parent"
         ));
-        cmbSanction.setPromptText("Warning");
+        cmbSanction.setPromptText("Select Sanction...");
         cmbSanction.setMaxWidth(Double.MAX_VALUE);
         cmbSanction.setStyle(BORDER_STYLE);
         boxSanction.getChildren().addAll(lblSanction, cmbSanction);
@@ -161,13 +161,36 @@ public class LogViolationPanel extends BorderPane {
 
         // Logic to enable/disable Custom Text when "Other" is selected
         cmbSpecificViolation.setOnAction(e -> {
-            boolean isOther = "Other".equals(cmbSpecificViolation.getValue());
+            String selectedViolation = cmbSpecificViolation.getValue();
+            boolean isOther = "Other".equals(selectedViolation);
+            
             txtDescription.setDisable(!isOther);
+            
             if (isOther) {
                 txtDescription.setStyle("-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #d1d5db; -fx-control-inner-background: white;");
+                cmbCategory.getSelectionModel().clearSelection(); // Let the user manually choose Minor/Major for "Other"
             } else {
                 txtDescription.clear();
                 txtDescription.setStyle("-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #d1d5db; -fx-control-inner-background: #f3f4f6;");
+                
+                // --- NEW: AUTO-SELECT MINOR OR MAJOR ---
+                if (selectedViolation != null) {
+                    if (selectedViolation.equals("No ID") || 
+                        selectedViolation.equals("Improper Uniform") || 
+                        selectedViolation.equals("Late") || 
+                        selectedViolation.equals("Loitering")) {
+                        
+                        cmbCategory.setValue("MINOR");
+                        
+                    } else if (selectedViolation.equals("Absence") || 
+                               selectedViolation.equals("Disrespectful Behavior") || 
+                               selectedViolation.equals("Use of Phone during class") || 
+                               selectedViolation.equals("Smoking") || 
+                               selectedViolation.equals("Vandalism")) {
+                        
+                        cmbCategory.setValue("MAJOR");
+                    }
+                }
             }
         });
 

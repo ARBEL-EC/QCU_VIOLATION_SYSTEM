@@ -125,7 +125,7 @@ public class AuditPanel extends VBox {
     private void loadAuditLogs() {
         masterData.clear(); 
 
-        String query = "SELECT Timestamp, User, Action, Details FROM AuditLogs ORDER BY Timestamp DESC";
+        String query = "SELECT datetime(Timestamp, 'localtime') AS Timestamp, User, Action, Details FROM AuditLogs ORDER BY Timestamp DESC";
 
         try (Connection conn = DatabaseConnection.getConnection()) {
             if (conn == null) {
