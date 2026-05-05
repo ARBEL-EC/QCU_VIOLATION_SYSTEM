@@ -18,18 +18,18 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 
 public class LogViolationPanel extends BorderPane {
-
     private String currentUsername;
     
     // Form Components
+    private ComboBox<String> cmbViolation; // UPDATED: Consolidated Dropdown
     private ComboBox<StudentItem> cmbStudent;
-    private ComboBox<String> cmbCategory;
+    private ComboBox<String> cmbCategory; // This is the "Type" (Minor/Major)
     private DatePicker datePicker;
     private ComboBox<String> cmbSanction;
-    private ComboBox<String> cmbSpecificViolation; // NEW: Predefined Dropdown
-    private TextArea txtDescription; // Existing: Now used for custom/Other input
 
     // Data lists
     private ObservableList<StudentItem> allStudents = FXCollections.observableArrayList();
@@ -39,9 +39,7 @@ public class LogViolationPanel extends BorderPane {
     private final String FONT_FAMILY = "'ITC Avant Garde Gothic', 'Segoe UI', sans-serif";
     private final String LABEL_COLOR = "#6d6a6a";
     private final String BORDER_STYLE = "-fx-background-color: white; -fx-background-radius: 8; -fx-border-color: #d1d5db; -fx-border-radius: 8; -fx-padding: 2;";
-
     
-    // --- FIX 1: Update constructor to accept the username ---
     public LogViolationPanel(String username) {
         this.currentUsername = username;
         
@@ -64,19 +62,16 @@ public class LogViolationPanel extends BorderPane {
     // ==========================================
     private HBox createHeader() {
         HBox header = new HBox();
-        header.setAlignment(Pos.CENTER_LEFT); // Align left since right side is handled by MainFrame
-        header.setPadding(new Insets(0, 0, 20, 0)); 
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(0, 0, 20, 0));
 
-        // Header Title
         Label lblTitle = new Label("LOG VIOLATION");
         lblTitle.setStyle("-fx-font-family: " + FONT_FAMILY + "; "
                 + "-fx-font-size: 60px; " 
                 + "-fx-font-weight: bold; "
                 + "-fx-text-fill: linear-gradient(to right, #004aad, #cb6ce6);");
 
-        // --- FIX 2: Removed the hardcoded "USER ADMIN" that was causing the overlap! ---
         header.getChildren().add(lblTitle);
-        
         return header;
     }
 
@@ -100,18 +95,55 @@ public class LogViolationPanel extends BorderPane {
 
         VBox formFields = new VBox(15);
         
-        // Row 1: Student Search
+        // --- ROW 1: Student Search (MOVED TO TOP) ---
         formFields.getChildren().add(createStudentSearchBox());
 
-        // Row 2: Category and Date
-        HBox row2 = new HBox(20);
+        // --- ROW 2: Violation Dropdown (MOVED BELOW STUDENT) ---
+        VBox boxViolation = new VBox(5);
+        Label lblViolation = createFormLabel("Violation");
+        
+        // Categorized Lists
+        List<String> majorOffenses = Arrays.asList(
+            "Cheating", "Plagiarism", "Vandalism", "Possession of weapons or explosives",
+            "Major Academic Disruption", "Violence", "Substance abuse (Drugs/Alcohol)",
+            "Damaging university’s reputation", "Stealing", "Bullying", "Smoking",
+            "Falsifying official documents", "Gambling", "Illegal protests/rallies",
+            "Criminal conviction", "Pornography", "PDA", "ID misuse", "Repeated offenses"
+        );
+
+        List<String> minorOffenses = Arrays.asList(
+            "Conduct unbecoming", "Classroom Disturbance", 
+            "Non-compliance with regulations", "Littering"
+        );
+
+        ObservableList<String> allViolations = FXCollections.observableArrayList();
+        allViolations.add("--- MAJOR OFFENSES ---");
+        allViolations.addAll(majorOffenses);
+        allViolations.add("--- MINOR OFFENSES ---");
+        allViolations.addAll(minorOffenses);
+
+        cmbViolation = new ComboBox<>(allViolations);
+        cmbViolation.setPromptText("Select Violation...");
+        cmbViolation.setMaxWidth(Double.MAX_VALUE);
+        cmbViolation.setStyle(BORDER_STYLE);
+        
+        boxViolation.getChildren().addAll(lblViolation, cmbViolation);
+        formFields.getChildren().add(boxViolation);
+
+        // --- ROW 3: Type (Auto-filled/Locked) and Date ---
+        HBox row3 = new HBox(20);
         
         VBox boxCategory = new VBox(5);
-        Label lblCategory = createFormLabel("Type"); 
+        Label lblCategory = createFormLabel("Type");
         cmbCategory = new ComboBox<>(FXCollections.observableArrayList("MINOR", "MAJOR"));
-        cmbCategory.setPromptText("Select Type...");
+        cmbCategory.setPromptText("Auto-filled...");
         cmbCategory.setMaxWidth(Double.MAX_VALUE);
-        cmbCategory.setStyle(BORDER_STYLE);
+        
+        // LOCK THE TYPE FIELD
+        cmbCategory.setMouseTransparent(true);
+        cmbCategory.setFocusTraversable(false);
+        cmbCategory.setStyle("-fx-background-color: #f3f4f6; -fx-background-radius: 8; -fx-border-color: #d1d5db; -fx-border-radius: 8; -fx-padding: 2; -fx-opacity: 1; -fx-font-weight: bold;");
+        
         HBox.setHgrow(boxCategory, Priority.ALWAYS);
         boxCategory.getChildren().addAll(lblCategory, cmbCategory);
 
@@ -120,16 +152,16 @@ public class LogViolationPanel extends BorderPane {
         datePicker = new DatePicker(LocalDate.now());
         datePicker.setMaxWidth(Double.MAX_VALUE);
         datePicker.setStyle(BORDER_STYLE);
-        formatDatePicker(datePicker); 
+        formatDatePicker(datePicker);
         HBox.setHgrow(boxDate, Priority.ALWAYS);
         boxDate.getChildren().addAll(lblDate, datePicker);
 
-        row2.getChildren().addAll(boxCategory, boxDate);
-        formFields.getChildren().add(row2);
+        row3.getChildren().addAll(boxCategory, boxDate);
+        formFields.getChildren().add(row3);
 
-        // Row 3: Sanction
+        // --- ROW 4: Sanction ---
         VBox boxSanction = new VBox(5);
-        Label lblSanction = createFormLabel("Sanction:");
+        Label lblSanction = createFormLabel("Sanction");
         cmbSanction = new ComboBox<>(FXCollections.observableArrayList(
                 "Warning", "Community Service", "Suspension", "Drop", "Call Parent"
         ));
@@ -139,66 +171,25 @@ public class LogViolationPanel extends BorderPane {
         boxSanction.getChildren().addAll(lblSanction, cmbSanction);
         formFields.getChildren().add(boxSanction);
 
-        // Row 4: Violation Dropdown + Custom Text
-        VBox boxViolation = new VBox(5);
-        Label lblViolation = createFormLabel("Violation Type:");
-        
-        cmbSpecificViolation = new ComboBox<>(FXCollections.observableArrayList(
-                "No ID", "Improper Uniform", "Late", "Absence", "Loitering", 
-                "Disrespectful Behavior", "Use of Phone during class", "Smoking", "Vandalism", "Other"
-        ));
-        cmbSpecificViolation.setPromptText("Select Violation...");
-        cmbSpecificViolation.setMaxWidth(Double.MAX_VALUE);
-        cmbSpecificViolation.setStyle(BORDER_STYLE);
-
-        Label lblDesc = createFormLabel("Custom Description (If 'Other'):");
-        txtDescription = new TextArea();
-        txtDescription.setPromptText("Enter custom violation details...");
-        txtDescription.setPrefRowCount(3);
-        txtDescription.setWrapText(true);
-        txtDescription.setDisable(true); // Disabled by default
-        txtDescription.setStyle("-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #d1d5db; -fx-control-inner-background: #f3f4f6;");
-
-        // Logic to enable/disable Custom Text when "Other" is selected
-        cmbSpecificViolation.setOnAction(e -> {
-            String selectedViolation = cmbSpecificViolation.getValue();
-            boolean isOther = "Other".equals(selectedViolation);
-            
-            txtDescription.setDisable(!isOther);
-            
-            if (isOther) {
-                txtDescription.setStyle("-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #d1d5db; -fx-control-inner-background: white;");
-                cmbCategory.getSelectionModel().clearSelection(); // Let the user manually choose Minor/Major for "Other"
-            } else {
-                txtDescription.clear();
-                txtDescription.setStyle("-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #d1d5db; -fx-control-inner-background: #f3f4f6;");
-                
-                // --- NEW: AUTO-SELECT MINOR OR MAJOR ---
-                if (selectedViolation != null) {
-                    if (selectedViolation.equals("No ID") || 
-                        selectedViolation.equals("Improper Uniform") || 
-                        selectedViolation.equals("Late") || 
-                        selectedViolation.equals("Loitering")) {
-                        
-                        cmbCategory.setValue("MINOR");
-                        
-                    } else if (selectedViolation.equals("Absence") || 
-                               selectedViolation.equals("Disrespectful Behavior") || 
-                               selectedViolation.equals("Use of Phone during class") || 
-                               selectedViolation.equals("Smoking") || 
-                               selectedViolation.equals("Vandalism")) {
-                        
-                        cmbCategory.setValue("MAJOR");
-                    }
+        // --- AUTO-FILL LOGIC FOR TYPE ---
+        cmbViolation.setOnAction(e -> {
+            String selected = cmbViolation.getValue();
+            if (selected != null) {
+                if (selected.startsWith("---")) {
+                    // Prevent users from actually selecting the category headers
+                    Platform.runLater(() -> cmbViolation.getSelectionModel().clearSelection());
+                    cmbCategory.getSelectionModel().clearSelection();
+                } else if (majorOffenses.contains(selected)) {
+                    cmbCategory.setValue("MAJOR");
+                } else if (minorOffenses.contains(selected)) {
+                    cmbCategory.setValue("MINOR");
                 }
             }
         });
 
-        boxViolation.getChildren().addAll(lblViolation, cmbSpecificViolation, lblDesc, txtDescription);
-        formFields.getChildren().add(boxViolation);
-
         // Add everything to card
         card.getChildren().addAll(lblIncident, formFields, createButtons());
+
         return card;
     }
 
@@ -220,6 +211,7 @@ public class LogViolationPanel extends BorderPane {
             public String toString(StudentItem object) {
                 return object == null ? "" : object.toString();
             }
+
             @Override
             public StudentItem fromString(String string) {
                 return cmbStudent.getItems().stream().filter(item -> 
@@ -305,12 +297,12 @@ public class LogViolationPanel extends BorderPane {
     }
 
     private boolean validateFields() {
+        if (cmbViolation.getValue() == null || cmbViolation.getValue().startsWith("---")) return false;
         if (cmbStudent.getValue() == null || cmbStudent.getEditor().getText().isEmpty()) return false;
         if (cmbCategory.getValue() == null) return false;
         if (datePicker.getValue() == null) return false;
         if (cmbSanction.getValue() == null) return false;
-        if (cmbSpecificViolation.getValue() == null) return false; 
-        if ("Other".equals(cmbSpecificViolation.getValue()) && txtDescription.getText().trim().isEmpty()) return false; 
+        
         return true;
     }
 
@@ -319,7 +311,7 @@ public class LogViolationPanel extends BorderPane {
     // ==========================================
     private void loadStudentsFromDatabase() {
         allStudents.clear();
-        String sql = "SELECT StudentID, Name, Course FROM Students;"; 
+        String sql = "SELECT StudentID, Name, Course FROM Students;";
         
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
@@ -352,7 +344,6 @@ public class LogViolationPanel extends BorderPane {
         String sqlViolation = "INSERT INTO Violations (Date, StudentID, StudentName, Course, Location, Violation, Type, Sanction, Status) " +
                               "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending');";
                               
-        // --- FIX 3: Update SQL to use ? instead of 'SYSTEM' ---
         String sqlAudit = "INSERT INTO AuditLogs (User, Action, Details) VALUES (?, 'Logged Violation', ?);";
 
         try (Connection conn = DatabaseConnection.getConnection()) {
@@ -367,9 +358,7 @@ public class LogViolationPanel extends BorderPane {
                 psVio.setString(4, selectedStudent.getCourse());
                 psVio.setString(5, ""); 
                 
-                String finalViolationText = "Other".equals(cmbSpecificViolation.getValue()) ? 
-                                txtDescription.getText().trim() : 
-                                cmbSpecificViolation.getValue();
+                String finalViolationText = cmbViolation.getValue();
                 
                 psVio.setString(6, finalViolationText); 
                 psVio.setString(7, cmbCategory.getValue()); 
@@ -378,7 +367,6 @@ public class LogViolationPanel extends BorderPane {
 
                 String auditDetails = "Logged " + cmbCategory.getValue() + " violation for " + selectedStudent.getId();
                 
-                // --- FIX 4: Inject the real username here ---
                 psAudit.setString(1, currentUsername);
                 psAudit.setString(2, auditDetails);
                 psAudit.executeUpdate();
@@ -392,7 +380,6 @@ public class LogViolationPanel extends BorderPane {
                 conn.rollback(); 
                 throw ex; 
             }
-
         } catch (Exception e) {
             ui.components.CustomDialog.showMessage("Database Error", "Failed to save record: " + e.getMessage(), true);
             e.printStackTrace();
@@ -400,14 +387,13 @@ public class LogViolationPanel extends BorderPane {
     }
 
     private void clearForm() {
+        cmbViolation.getSelectionModel().clearSelection();
         cmbStudent.getSelectionModel().clearSelection();
         cmbStudent.getEditor().clear();
         cmbCategory.getSelectionModel().clearSelection();
         datePicker.setValue(LocalDate.now());
         cmbSanction.getSelectionModel().clearSelection();
-        cmbSpecificViolation.getSelectionModel().clearSelection(); 
-        txtDescription.clear();
-        txtDescription.setDisable(true); 
+        
         filteredStudents.setAll(allStudents); 
     }
 

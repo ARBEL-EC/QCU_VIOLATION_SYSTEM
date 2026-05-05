@@ -321,7 +321,7 @@ public class RecordsPanel extends VBox {
         cmbStatus.setMaxWidth(Double.MAX_VALUE);
         cmbStatus.setStyle("-fx-background-radius: 5; -fx-border-radius: 5; -fx-border-color: #d1d5db; -fx-background-color: white;");
 
-        Label lblViolation = new Label("Violation Description:");
+        Label lblViolation = new Label("Violation:");
         lblViolation.setStyle("-fx-font-family: 'ITC Avant Garde Gothic', sans-serif; -fx-font-weight: bold; -fx-text-fill: #555555;");
         TextArea txtViolation = new TextArea(record.getViolation()); 
         txtViolation.setWrapText(true);
